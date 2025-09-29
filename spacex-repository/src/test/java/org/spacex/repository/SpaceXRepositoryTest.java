@@ -5,12 +5,15 @@ import static org.assertj.core.api.Assertions.fail;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.spacex.model.DefaultMission;
 import org.spacex.model.Mission;
 import org.spacex.model.MissionStatus;
 import org.spacex.model.Rocket;
 import org.spacex.model.RocketStatus;
 import org.spacex.repository.mission.exceptions.DuplicateMissionException;
+import org.spacex.repository.mission.exceptions.RocketAssignmentMissionAlreadyFinishedException;
 import org.spacex.repository.rocket.exceptions.DuplicateRocketException;
+import org.spacex.repository.rocket.exceptions.RocketAlreadyAssignedToMissionException;
 
 public class SpaceXRepositoryTest {
 
@@ -88,8 +91,28 @@ public class SpaceXRepositoryTest {
 		assertThat(mission.getStatus()).isEqualTo(MissionStatus.IN_PROGRESS);
 	}
 	
-	@Test
+	@Test(expected = RocketAlreadyAssignedToMissionException.class)
 	public void givenRocketAssignedToMission__whenAssignmentToScheduledMission__thenRocketInUseExceptionShouldBeThrown() {
+		// given 
+		Rocket rocket = sut.createNewRocket("My rocket");
+		Mission missionOne = sut.createNewMission("old mission");
+		sut.assignRocketForMission(rocket, missionOne);
 		
+		Mission missionTwo = sut.createNewMission("New mission");
+		
+		//when
+		sut.assignRocketForMission(rocket, missionTwo);
+		fail("Expected failure due to duplicate mission");
+	}
+	
+	@Test(expected = RocketAssignmentMissionAlreadyFinishedException.class)
+	public void givenMissionIsFinished__whenAssignmentRocket__thenRocketAssignmentExceptionShouldBeThrown() {
+		// given
+		Rocket rocket = sut.createNewRocket("My rocket");
+		DefaultMission mission = (DefaultMission) sut.createNewMission("old mission");
+		mission.setStatus(MissionStatus.ENDED);
+		
+		sut.assignRocketForMission(rocket, mission);
+		fail("Expected failure due to mission finished.");
 	}
 }

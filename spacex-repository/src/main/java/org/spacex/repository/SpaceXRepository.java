@@ -10,7 +10,9 @@ import org.spacex.model.MissionStatus;
 import org.spacex.model.Rocket;
 import org.spacex.model.RocketStatus;
 import org.spacex.repository.mission.exceptions.DuplicateMissionException;
+import org.spacex.repository.mission.exceptions.RocketAssignmentMissionAlreadyFinishedException;
 import org.spacex.repository.rocket.exceptions.DuplicateRocketException;
+import org.spacex.repository.rocket.exceptions.RocketAlreadyAssignedToMissionException;
 
 public class SpaceXRepository {
 	private final List<DefaultMission> missions = new ArrayList<>();
@@ -38,6 +40,12 @@ public class SpaceXRepository {
 	}
 	
 	public void assignRocketForMission(final Rocket rocket, final Mission mission) {
+		if (rocket.getCurrentMission().isPresent()) {
+			throw new RocketAlreadyAssignedToMissionException(rocket);
+		}
+		if (mission.getStatus() == MissionStatus.ENDED) {
+			throw new RocketAssignmentMissionAlreadyFinishedException(rocket, mission);
+		}
 		((DefaultRocket) rocket).setStatus(RocketStatus.IN_SPACE);
 		((DefaultRocket) rocket).setMission((DefaultMission) mission);
 		((DefaultMission) mission).setStatus(MissionStatus.IN_PROGRESS);
