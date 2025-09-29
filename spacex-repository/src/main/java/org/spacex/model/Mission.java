@@ -4,4 +4,6 @@ public interface Mission {
 
 	String getName();
 
+	MissionStatus getStatus();
+
 }

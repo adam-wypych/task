@@ -12,4 +12,9 @@ public class DefaultMission implements Mission {
 	public String getName() {
 		return name;
 	}
+
+	@Override
+	public MissionStatus getStatus() {
+		return MissionStatus.SCHEDULED;
+	}
 }
