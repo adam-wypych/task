@@ -6,7 +6,9 @@ import java.util.List;
 import org.spacex.repository.mission.exceptions.DuplicateMissionException;
 
 import org.spacex.model.DefaultMission;
+import org.spacex.model.DefaultRocket;
 import org.spacex.model.Mission;
+import org.spacex.model.Rocket;
 
 public class SpaceXRepository {
 	private final List<Mission> missions = new ArrayList<>();
@@ -19,5 +21,9 @@ public class SpaceXRepository {
 		missions.add(newMission);
 		
 		return newMission;
+	}
+
+	public Rocket createNewRocket(final String rocketName) {
+		return new DefaultRocket(rocketName);
 	}
 }

@@ -7,6 +7,8 @@ import org.junit.Before;
 import org.junit.Test;
 import org.spacex.model.Mission;
 import org.spacex.model.MissionStatus;
+import org.spacex.model.Rocket;
+import org.spacex.model.RocketStatus;
 import org.spacex.repository.mission.exceptions.DuplicateMissionException;
 
 public class SpaceXRepositoryTest {
@@ -41,6 +43,16 @@ public class SpaceXRepositoryTest {
 		} catch (DuplicateMissionException e) {
 			assertThat(e).hasMessage("Mission with name " + "MyMission" + " already exists in repository");
 		}
-
+	}
+	
+	@Test
+	public void givenRocketDoesNotExist__whenRocketIsBeingCreated__thenRocketShouldHaveCorrectState() {
+		// given & when
+		Rocket rocket = sut.createNewRocket("MyRocket");
+		
+		// then
+		assertThat(rocket).isNotNull();
+		assertThat(rocket.getName()).isEqualTo("MyRocket");
+		assertThat(rocket.getStatus()).isEqualTo(RocketStatus.ON_GROUND);
 	}
 }
