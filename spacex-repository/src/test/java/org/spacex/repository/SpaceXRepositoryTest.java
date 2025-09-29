@@ -6,14 +6,17 @@ import static org.assertj.core.api.Assertions.fail;
 import org.junit.Before;
 import org.junit.Test;
 import org.spacex.model.DefaultMission;
+import org.spacex.model.DefaultRocket;
 import org.spacex.model.Mission;
 import org.spacex.model.MissionStatus;
 import org.spacex.model.Rocket;
 import org.spacex.model.RocketStatus;
 import org.spacex.repository.mission.exceptions.DuplicateMissionException;
 import org.spacex.repository.mission.exceptions.RocketAssignmentMissionAlreadyFinishedException;
+import org.spacex.repository.mission.exceptions.UnknownMissionException;
 import org.spacex.repository.rocket.exceptions.DuplicateRocketException;
 import org.spacex.repository.rocket.exceptions.RocketAlreadyAssignedToMissionException;
+import org.spacex.repository.rocket.exceptions.UnknownRocketException;
 
 public class SpaceXRepositoryTest {
 
@@ -114,5 +117,21 @@ public class SpaceXRepositoryTest {
 		
 		sut.assignRocketForMission(rocket, mission);
 		fail("Expected failure due to mission finished.");
+	}
+	
+	@Test(expected = UnknownMissionException.class)
+	public void tryingToAssignMissionCreatedOutsideOfRepository() {
+		DefaultMission mission = new DefaultMission("");
+		Rocket rocket = sut.createNewRocket("NewRocket");
+		
+		sut.assignRocketForMission(rocket, mission);
+	}
+	
+	@Test(expected = UnknownRocketException.class)
+	public void tryingToAssignRocketCreatedOutsideOfRepository() {
+		Mission mission = sut.createNewMission("NewMission");
+		DefaultRocket rocket = new DefaultRocket("new");
+		
+		sut.assignRocketForMission(rocket, mission);
 	}
 }
