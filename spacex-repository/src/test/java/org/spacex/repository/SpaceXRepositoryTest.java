@@ -10,6 +10,7 @@ import org.spacex.model.MissionStatus;
 import org.spacex.model.Rocket;
 import org.spacex.model.RocketStatus;
 import org.spacex.repository.mission.exceptions.DuplicateMissionException;
+import org.spacex.repository.rocket.exceptions.DuplicateRocketException;
 
 public class SpaceXRepositoryTest {
 
@@ -32,11 +33,12 @@ public class SpaceXRepositoryTest {
 	}
 
 	@Test
-	public void givenTryToCreateSameMissionTwic__whenMissionIsCreated__thenDuringSecondTimeDuplicateElementShouldBeThrown() {
+	public void givenTryToCreateSameMissionTwice__whenMissionIsCreated__thenDuringSecondTimeDuplicateElementShouldBeThrown() {
 		// given
 		@SuppressWarnings("unused")
 		Mission mission = sut.createNewMission("MyMission");
 		try {
+			// when & then
 			@SuppressWarnings("unused")
 			Mission missionClone = sut.createNewMission("MyMission");
 			fail("expected failue due to same mission exists");
@@ -54,5 +56,19 @@ public class SpaceXRepositoryTest {
 		assertThat(rocket).isNotNull();
 		assertThat(rocket.getName()).isEqualTo("MyRocket");
 		assertThat(rocket.getStatus()).isEqualTo(RocketStatus.ON_GROUND);
+	}
+	
+	@Test
+	public void givenTryToCreateSameRocketTwice__whenRocketisCreate__thenDuringSecondTimeDuplicateElementShouldBeThrown() {
+		// given
+		@SuppressWarnings("unused")
+		Rocket rocket = sut.createNewRocket("MyRocket");
+		try {
+			@SuppressWarnings("unused")
+			Rocket rocketClone = sut.createNewRocket("MyRocket");
+			fail("expected failure due to rocket exists");
+		} catch (DuplicateRocketException e) {
+			assertThat(e).hasMessage("Rocket with name " + "MyRocket" + " already exists in repository");
+		}
 	}
 }
