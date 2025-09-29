@@ -11,14 +11,14 @@ import org.spacex.repository.mission.exceptions.DuplicateMissionException;
 import org.spacex.repository.rocket.exceptions.DuplicateRocketException;
 
 public class SpaceXRepository {
-	private final List<Mission> missions = new ArrayList<>();
-	private final List<Rocket> rockets = new ArrayList<>();
+	private final List<DefaultMission> missions = new ArrayList<>();
+	private final List<DefaultRocket> rockets = new ArrayList<>();
 	
 	public Mission createNewMission(final String missionName) {
 		if (missions.stream().anyMatch(m -> m.getName().equals(missionName))) {
 			throw new DuplicateMissionException(missionName);
 		}
-		Mission newMission = new DefaultMission(missionName);
+		DefaultMission newMission = new DefaultMission(missionName);
 		missions.add(newMission);
 		
 		return newMission;
@@ -29,9 +29,13 @@ public class SpaceXRepository {
 			throw new DuplicateRocketException(rocketName);
 		}
 		
-		Rocket newRocket = new DefaultRocket(rocketName);
+		DefaultRocket newRocket = new DefaultRocket(rocketName);
 		rockets.add(newRocket);
 		
 		return newRocket;
+	}
+	
+	public void assignRocketForMission(final Rocket rocket, final Mission mission) {
+		
 	}
 }

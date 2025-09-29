@@ -71,4 +71,20 @@ public class SpaceXRepositoryTest {
 			assertThat(e).hasMessage("Rocket with name " + "MyRocket" + " already exists in repository");
 		}
 	}
+	
+	@Test
+	public void givenFreeRocket__whenAssignmentToScheduledMission__thenRocketAndMissionStateShouldBeUpdated() {
+		// given
+		Rocket rocket = sut.createNewRocket("RocketOne");
+		Mission mission = sut.createNewMission("MyMission");
+		
+		// when
+		sut.assignRocketForMission(rocket, mission);
+		
+		// then
+		assertThat(rocket.getStatus()).isEqualTo(RocketStatus.IN_SPACE);
+		assertThat(rocket.getCurrentMission()).contains(mission);
+		assertThat(mission.getRockets()).contains(rocket);
+		assertThat(mission.getStatus()).isEqualTo(MissionStatus.IN_PROGRESS);
+	}
 }
