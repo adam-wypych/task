@@ -14,9 +14,8 @@ public class SpaceXRepositoryTest {
 	
 	@Test
 	public void givenMissionDoesNotExist__whenMissionIsCreated__operationShouldSuccess() {
-		// given
-		
-		// when
+		// given & when
+		Mission mission = sut.createNewMission("MyMission");
 		
 		// then
 	}
