@@ -4,10 +4,12 @@ import java.util.Optional;
 
 public class DefaultRocket implements Rocket {
 	private final String name;
+	private volatile RocketStatus status;
 	private DefaultMission currentMission = null;
 	
 	public DefaultRocket(final String name) {
 		this.name = name;
+		this.status = RocketStatus.ON_GROUND;
 	}
 	
 	@Override
@@ -16,11 +18,15 @@ public class DefaultRocket implements Rocket {
 	}
 
 	@Override
-	public RocketStatus getStatus() {
-		return RocketStatus.ON_GROUND;
+	public synchronized RocketStatus getStatus() {
+		return status;
+	}
+	
+	public synchronized void setStatus(final RocketStatus newStatus) {
+		this.status = newStatus;
 	}
 
-	protected void setMission(final DefaultMission mission) {
+	public synchronized void setMission(final DefaultMission mission) {
 		this.currentMission = mission;
 	}
 	

@@ -87,4 +87,9 @@ public class SpaceXRepositoryTest {
 		assertThat(mission.getRockets()).contains(rocket);
 		assertThat(mission.getStatus()).isEqualTo(MissionStatus.IN_PROGRESS);
 	}
+	
+	@Test
+	public void givenRocketAssignedToMission__whenAssignmentToScheduledMission__thenRocketInUseExceptionShouldBeThrown() {
+		
+	}
 }
