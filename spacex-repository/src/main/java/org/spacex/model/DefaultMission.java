@@ -9,10 +9,12 @@ public class DefaultMission implements Mission {
 	private final String name;
 	private final List<Rocket> rockets = new ArrayList<>();
 	private MissionStatus status;
+	private MissionStatusCalculator statusCalculator;
 	
 	public DefaultMission(final String name) {
 		this.name = name;
 		this.status = MissionStatus.SCHEDULED;
+		this.statusCalculator =  new MissionStatusCalculator();
 	}
 	
 	@Override
@@ -22,7 +24,7 @@ public class DefaultMission implements Mission {
 
 	@Override
 	public synchronized MissionStatus getStatus() {
-		return status;
+		return statusCalculator.status(status, rockets);
 	}
 
 	public synchronized void setStatus(final MissionStatus newStatus) {
@@ -34,7 +36,11 @@ public class DefaultMission implements Mission {
 		return Collections.unmodifiableList(rockets);
 	}
 	
-	public void addRocket(Rocket rocket) {
+	public synchronized void addRocket(Rocket rocket) {
 		this.rockets.add(rocket);
+	}
+	
+	public synchronized void removeRockets() {
+		this.rockets.clear();
 	}
 }

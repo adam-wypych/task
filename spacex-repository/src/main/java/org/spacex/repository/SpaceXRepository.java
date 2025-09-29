@@ -14,6 +14,7 @@ import org.spacex.repository.mission.exceptions.DuplicateMissionException;
 import org.spacex.repository.mission.exceptions.RocketAssignmentMissionAlreadyFinishedException;
 import org.spacex.repository.mission.exceptions.UnknownMissionException;
 import org.spacex.repository.rocket.exceptions.DuplicateRocketException;
+import org.spacex.repository.rocket.exceptions.IllegalStatusOfRocket;
 import org.spacex.repository.rocket.exceptions.RocketAlreadyAssignedToMissionException;
 import org.spacex.repository.rocket.exceptions.UnknownRocketException;
 
@@ -66,5 +67,29 @@ public class SpaceXRepository {
 
 	private Optional<DefaultMission> findConcreteInRepository(final Mission mission) {
 		return missions.stream().filter(e -> e.getName().equals(mission.getName())).findFirst();
+	}
+
+	public void changeStatus(final Rocket rocket, final RocketStatus status) {
+		if (status == RocketStatus.IN_REPAIR || status == RocketStatus.IN_SPACE) {
+			if (rocket.getCurrentMission().isEmpty()) {
+				throw new IllegalStatusOfRocket("Rocket can't be in repair or space status");
+			}
+		} else if (status == RocketStatus.ON_GROUND && rocket.getCurrentMission().isPresent()) {
+			throw new IllegalStatusOfRocket("Rocket can't be in ground when mission is ongoing");
+		}
+		
+		findConcreteInRepository(rocket).ifPresent(dr -> dr.setStatus(status));
+	}
+	
+	public void finishMission(final Mission mission) {
+		for (Rocket rocket: mission.getRockets()) {
+			DefaultRocket defaultRocket = findConcreteInRepository(rocket).orElseThrow(() -> new UnknownRocketException(rocket));
+			defaultRocket.setMission(null);
+			changeStatus(rocket, RocketStatus.ON_GROUND);
+		}
+		
+		DefaultMission defaultMission = findConcreteInRepository(mission).orElseThrow(() -> new UnknownMissionException(mission));
+		defaultMission.removeRockets();
+		defaultMission.setStatus(MissionStatus.ENDED);
 	}
 }

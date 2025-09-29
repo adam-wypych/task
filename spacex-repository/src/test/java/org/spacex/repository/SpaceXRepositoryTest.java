@@ -134,4 +134,48 @@ public class SpaceXRepositoryTest {
 		
 		sut.assignRocketForMission(rocket, mission);
 	}
+	
+	@Test
+	public void whenOneRocketIsInRepairStateMissionShouldBeInPendingState() {
+		// prepare
+		Mission mission = sut.createNewMission("myMission");
+		Rocket rocketOne = sut.createNewRocket("RocketOne");
+		Rocket rocketTwo = sut.createNewRocket("RocketTwo");
+		Rocket rocketThree = sut.createNewRocket("RocketThree");
+		sut.assignRocketForMission(rocketOne, mission);
+		sut.assignRocketForMission(rocketTwo, mission);
+		sut.assignRocketForMission(rocketThree, mission);
+		
+		// execute
+		sut.changeStatus(rocketOne, RocketStatus.IN_REPAIR);
+		
+		// verify
+		assertThat(mission.getStatus()).isEqualTo(MissionStatus.PENDING);
+	}
+	
+	@Test
+	public void whenMissionIsFinishedRocketsShouldBeInGroundPosition() {
+		// prepare
+		Mission mission = sut.createNewMission("myMission");
+		Rocket rocketOne = sut.createNewRocket("RocketOne");
+		Rocket rocketTwo = sut.createNewRocket("RocketTwo");
+		Rocket rocketThree = sut.createNewRocket("RocketThree");
+		sut.assignRocketForMission(rocketOne, mission);
+		sut.assignRocketForMission(rocketTwo, mission);
+		sut.assignRocketForMission(rocketThree, mission);
+		sut.changeStatus(rocketOne, RocketStatus.IN_REPAIR);		
+		
+		// execute
+		sut.finishMission(mission);
+		
+		// verify
+		assertThat(mission.getStatus()).isEqualTo(MissionStatus.ENDED);
+		assertThat(mission.getRockets()).isEmpty();
+		assertThat(rocketOne.getCurrentMission()).isEmpty();
+		assertThat(rocketOne.getStatus()).isEqualTo(RocketStatus.ON_GROUND);
+		assertThat(rocketTwo.getCurrentMission()).isEmpty();
+		assertThat(rocketTwo.getStatus()).isEqualTo(RocketStatus.ON_GROUND);
+		assertThat(rocketThree.getCurrentMission()).isEmpty();
+		assertThat(rocketThree.getStatus()).isEqualTo(RocketStatus.ON_GROUND);
+	}
 }
