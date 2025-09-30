@@ -1,6 +1,8 @@
 package org.spacex.repository;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.List;
 import java.util.Optional;
 
@@ -10,6 +12,9 @@ import org.spacex.model.Mission;
 import org.spacex.model.MissionStatus;
 import org.spacex.model.Rocket;
 import org.spacex.model.RocketStatus;
+import org.spacex.model.summary.MissionSummary;
+import org.spacex.model.summary.RocketSummary;
+import org.spacex.model.summary.SpaceProgramSummary;
 import org.spacex.repository.mission.exceptions.DuplicateMissionException;
 import org.spacex.repository.mission.exceptions.RocketAssignmentMissionAlreadyFinishedException;
 import org.spacex.repository.mission.exceptions.UnknownMissionException;
@@ -18,7 +23,7 @@ import org.spacex.repository.rocket.exceptions.IllegalStatusOfRocket;
 import org.spacex.repository.rocket.exceptions.RocketAlreadyAssignedToMissionException;
 import org.spacex.repository.rocket.exceptions.UnknownRocketException;
 
-public class SpaceXRepository {
+public class SpaceXRepository implements SpaceXMissionRepository, SpaceXRocketRepository, SpaceProgramRepositoryOperations {
 	private final List<DefaultMission> missions = new ArrayList<>();
 	private final List<DefaultRocket> rockets = new ArrayList<>();
 
@@ -74,8 +79,6 @@ public class SpaceXRepository {
 			if (rocket.getCurrentMission().isEmpty()) {
 				throw new IllegalStatusOfRocket("Rocket can't be in repair or space status");
 			}
-		} else if (status == RocketStatus.ON_GROUND && rocket.getCurrentMission().isPresent()) {
-			throw new IllegalStatusOfRocket("Rocket can't be in ground when mission is ongoing");
 		}
 		
 		findConcreteInRepository(rocket).ifPresent(dr -> dr.setStatus(status));
@@ -91,5 +94,32 @@ public class SpaceXRepository {
 		DefaultMission defaultMission = findConcreteInRepository(mission).orElseThrow(() -> new UnknownMissionException(mission));
 		defaultMission.removeRockets();
 		defaultMission.setStatus(MissionStatus.ENDED);
+	}
+
+	@Override
+	public SpaceProgramSummary generateSummary() {
+		SpaceProgramSummary spaceProgramSummary = new SpaceProgramSummary();
+		for (Mission mission: missions) {
+			MissionSummary missionSummary = new MissionSummary(mission.getName(), mission.getStatus().getDisplayName());
+			spaceProgramSummary.addMissionSummary(missionSummary);
+			
+			for (Rocket rocket: mission.getRockets()) {
+				RocketSummary rocketSummary = new RocketSummary(rocket.getName(), rocket.getStatus().getDisplayName());
+				missionSummary.addRocketSummary(rocketSummary);
+			}
+		}
+		
+		Collections.sort(spaceProgramSummary.getMissionSummaries(), new Comparator<MissionSummary>() {
+
+			@Override
+			public int compare(MissionSummary o1, MissionSummary o2) {
+				int result = Integer.compare(o2.getRocketsSummary().size(), o1.getRocketsSummary().size());
+				if (result == 0) {
+					return (o1.getName().compareTo(o2.getName()) * -1);
+				}
+				return result;
+			}
+		});
+		return spaceProgramSummary;
 	}
 }
